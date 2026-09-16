@@ -5,6 +5,9 @@ import com.backend.blogplatform.dto.request.RegisterRequest;
 import com.backend.blogplatform.dto.response.AuthResponse;
 import com.backend.blogplatform.dto.response.UserResponse;
 import com.backend.blogplatform.entity.User;
+import com.backend.blogplatform.exception.EmailAlreadyExistsException;
+import com.backend.blogplatform.exception.InvalidCredentialException;
+import com.backend.blogplatform.exception.UserNotFoundException;
 import com.backend.blogplatform.mapper.UserMapper;
 import com.backend.blogplatform.repository.UserRepository;
 import com.backend.blogplatform.security.JwtService;
@@ -39,7 +42,7 @@ public class AuthService {
     public UserResponse register(RegisterRequest request){
 
         if (userRepository.existsByEmail(request.getEmail())){
-            throw new IllegalStateException("Email already registered!");
+            throw new EmailAlreadyExistsException("Email already registered!");
         }
 
         String hashPassword = passwordEncoder.encode(request.getPassword());
@@ -59,8 +62,8 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
-                        new IllegalStateException(
-                                "User not fount with email: " + request.getEmail()
+                        new InvalidCredentialException(
+                                "Invalid email or password"
                         )
                 );
 
