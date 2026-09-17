@@ -1,13 +1,16 @@
 package com.backend.blogplatform.service;
 
 import com.backend.blogplatform.dto.request.PostRequest;
+import com.backend.blogplatform.dto.response.LikeResponse;
 import com.backend.blogplatform.dto.response.PostResponse;
+import com.backend.blogplatform.entity.Like;
 import com.backend.blogplatform.entity.Post;
 import com.backend.blogplatform.entity.Tag;
 import com.backend.blogplatform.entity.User;
 import com.backend.blogplatform.exception.PostNotFoundException;
 import com.backend.blogplatform.exception.UserNotFoundException;
 import com.backend.blogplatform.mapper.PostMapper;
+import com.backend.blogplatform.repository.LikeRepository;
 import com.backend.blogplatform.repository.PostRepository;
 import com.backend.blogplatform.repository.TagRepository;
 import com.backend.blogplatform.repository.UserRepository;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -27,17 +31,20 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostMapper postMapper;
     private final TagRepository tagRepository;
+    private final LikeRepository likeRepository;
 
     public PostService(
             PostRepository postRepository,
             UserRepository userRepository,
             PostMapper postMapper,
-            TagRepository tagRepository
+            TagRepository tagRepository,
+            LikeRepository likeRepository
     ) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postMapper = postMapper;
         this.tagRepository = tagRepository;
+        this.likeRepository = likeRepository;
     }
 
     private Set<Tag> resolveTags(Set<String> tagNames){
@@ -102,5 +109,35 @@ public class PostService {
                 );
 
         return postMapper.toResponse(post);
+    }
+
+    @Transactional
+    public LikeResponse toggleLike(Long postId){
+
+        User user = getCurrentUser();
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new PostNotFoundException(
+                                "Post not found with id: " + postId
+                        )
+                );
+
+        Optional<Like> existingLike = likeRepository.findByUser_IdAndPost_Id(user.getId(), postId);
+
+        boolean liked;
+
+        if (existingLike.isPresent()){
+            likeRepository.delete(existingLike.get());
+            liked = false;
+        } else {
+            Like like = new Like(user, post);
+            likeRepository.save(like);
+            liked = true;
+        }
+
+        long likeCount = likeRepository.countByPost_Id(postId);
+
+        return new LikeResponse(liked, likeCount);
     }
 }
