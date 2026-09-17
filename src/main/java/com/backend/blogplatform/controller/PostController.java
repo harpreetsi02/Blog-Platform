@@ -1,8 +1,8 @@
 package com.backend.blogplatform.controller;
 
 import com.backend.blogplatform.dto.request.PostRequest;
+import com.backend.blogplatform.dto.response.LikeResponse;
 import com.backend.blogplatform.dto.response.PostResponse;
-import com.backend.blogplatform.entity.Post;
 import com.backend.blogplatform.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -49,6 +49,16 @@ public class PostController {
 
         PostResponse response =
                 postService.getPostById(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<LikeResponse> toggleLike(
+            @PathVariable Long postId
+    ) {
+        LikeResponse response =
+                postService.toggleLike(postId);
 
         return ResponseEntity.ok(response);
     }
