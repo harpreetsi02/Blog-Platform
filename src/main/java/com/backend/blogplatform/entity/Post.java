@@ -1,9 +1,10 @@
 package com.backend.blogplatform.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "posts")
@@ -23,13 +24,24 @@ public class Post {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     public Post(){}
 
-    public Post(String title, String content, User author) {
+    public Post(
+            String title, String content,
+            User author
+    ) {
         this.title = title;
         this.content = content;
         this.author = author;
@@ -76,6 +88,14 @@ public class Post {
 
     public void setAuthor(User author) {
         this.author = author;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 
     public LocalDateTime getCreatedAt() {

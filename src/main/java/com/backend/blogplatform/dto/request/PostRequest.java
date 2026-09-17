@@ -2,6 +2,8 @@ package com.backend.blogplatform.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.Set;
+
 public class PostRequest {
 
     @NotBlank(message = "Title is required!")
@@ -9,6 +11,8 @@ public class PostRequest {
 
     @NotBlank(message = "Content is required!")
     private String content;
+
+    private Set<String> tagNames;
 
     public String getTitle() {
         return title;
@@ -24,5 +28,13 @@ public class PostRequest {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Set<String> getTagNames() {
+        return tagNames;
+    }
+
+    public void setTagNames(Set<String> tagNames) {
+        this.tagNames = tagNames;
     }
 }
