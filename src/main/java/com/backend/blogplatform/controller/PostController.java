@@ -71,4 +71,27 @@ public class PostController {
 
        return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponse>> searchPosts(
+            @RequestParam String keyword,
+            Pageable pageable
+    ){
+
+        Page<PostResponse> responses =
+                postService.searchPosts(keyword, pageable);
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/search-fulltext")
+    public ResponseEntity<Page<PostResponse>> fullTextSearch(
+            @RequestParam String keyword,
+            Pageable pageable
+    ) {
+        Page<PostResponse> responses =
+                postService.fullTextSearch(keyword, pageable);
+
+        return ResponseEntity.ok(responses);
+    }
 }
