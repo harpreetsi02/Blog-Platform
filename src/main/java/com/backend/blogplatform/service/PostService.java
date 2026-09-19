@@ -162,4 +162,20 @@ public class PostService {
         post.setDeletedAt(LocalDateTime.now());
         postRepository.save(post);
     }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponse> searchPosts(String keyword, Pageable pageable){
+
+        Page<Post> posts = postRepository.searchPosts(keyword, pageable);
+
+        return posts.map(postMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponse> fullTextSearch(String keyword, Pageable pageable){
+
+        Page<Post> posts = postRepository.fullTextSearch(keyword, pageable);
+
+        return posts.map(postMapper::toResponse);
+    }
 }
