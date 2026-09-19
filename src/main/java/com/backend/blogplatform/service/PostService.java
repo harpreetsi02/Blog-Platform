@@ -8,6 +8,7 @@ import com.backend.blogplatform.entity.Post;
 import com.backend.blogplatform.entity.Tag;
 import com.backend.blogplatform.entity.User;
 import com.backend.blogplatform.exception.PostNotFoundException;
+import com.backend.blogplatform.exception.UnauthorizedActionException;
 import com.backend.blogplatform.exception.UserNotFoundException;
 import com.backend.blogplatform.mapper.PostMapper;
 import com.backend.blogplatform.repository.LikeRepository;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -93,7 +95,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getAllPosts(Pageable pageable){
 
-        Page<Post> posts = postRepository.findAll(pageable);
+        Page<Post> posts = postRepository.findAllWithAuthor(pageable);
 
         return posts.map(postMapper::toResponse);
     }
@@ -101,7 +103,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse getPostById(Long id){
 
-        Post post = postRepository.findById(id)
+        Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() ->
                         new PostNotFoundException(
                                 "Post not found with id: " + id
@@ -139,5 +141,25 @@ public class PostService {
         long likeCount = likeRepository.countByPost_Id(postId);
 
         return new LikeResponse(liked, likeCount);
+    }
+
+    @Transactional
+    public void deletePost(Long postId){
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() ->
+                        new PostNotFoundException(
+                                "Post not found with postId: " + postId
+                        )
+                );
+
+        if (!post.getAuthor().getId().equals(getCurrentUser().getId())){
+            throw new UnauthorizedActionException(
+                    "You are not able to delete this post."
+            );
+        }
+
+        post.setDeletedAt(LocalDateTime.now());
+        postRepository.save(post);
     }
 }

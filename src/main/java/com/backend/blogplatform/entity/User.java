@@ -1,6 +1,7 @@
 package com.backend.blogplatform.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +24,7 @@ public class User {
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @BatchSize(size = 10)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id")

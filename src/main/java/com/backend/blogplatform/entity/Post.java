@@ -1,6 +1,7 @@
 package com.backend.blogplatform.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class Post {
     private User author;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
     @JoinTable(
             name = "post_tags",
             joinColumns = @JoinColumn(name = "post_id"),
