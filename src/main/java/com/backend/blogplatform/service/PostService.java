@@ -15,6 +15,8 @@ import com.backend.blogplatform.repository.LikeRepository;
 import com.backend.blogplatform.repository.PostRepository;
 import com.backend.blogplatform.repository.TagRepository;
 import com.backend.blogplatform.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -100,6 +102,7 @@ public class PostService {
         return posts.map(postMapper::toResponse);
     }
 
+    @Cacheable(value = "posts", key = "#id")
     @Transactional(readOnly = true)
     public PostResponse getPostById(Long id){
 
@@ -143,6 +146,7 @@ public class PostService {
         return new LikeResponse(liked, likeCount);
     }
 
+    @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public void deletePost(Long postId){
 
@@ -179,6 +183,7 @@ public class PostService {
         return posts.map(postMapper::toResponse);
     }
 
+    @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public PostResponse updatePost(Long postId, PostRequest request){
 
