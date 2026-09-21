@@ -178,4 +178,30 @@ public class PostService {
 
         return posts.map(postMapper::toResponse);
     }
+
+    @Transactional
+    public PostResponse updatePost(Long postId, PostRequest request){
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() ->
+                        new PostNotFoundException(
+                                "Post not found with post ID: " + postId
+                        )
+                );
+
+        if (!post.getAuthor().getId().equals(getCurrentUser().getId())){
+            throw new UnauthorizedActionException(
+                    "You are not able to update this post."
+            );
+        }
+
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+
+        Set<Tag> tags = resolveTags(request.getTagNames());
+        post.setTags(tags);
+
+        postRepository.save(post);
+        return postMapper.toResponse(post);
+    }
 }

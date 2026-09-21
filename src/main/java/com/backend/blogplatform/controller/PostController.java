@@ -94,4 +94,15 @@ public class PostController {
 
         return ResponseEntity.ok(responses);
     }
+
+    @PutMapping("/{postId}")
+    public ResponseEntity<PostResponse> updatePost(
+            @PathVariable Long postId,
+            @Valid @RequestBody PostRequest request
+    ) {
+        PostResponse response =
+                postService.updatePost(postId, request);
+
+        return ResponseEntity.ok(response);
+    }
 }

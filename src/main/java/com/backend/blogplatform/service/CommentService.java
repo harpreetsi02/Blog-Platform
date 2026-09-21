@@ -24,15 +24,18 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
+    private final IdempotencyStore idempotencyStore;
 
     public CommentService(
             UserRepository userRepository, CommentRepository commentRepository,
-            CommentMapper commentMapper, PostRepository postRepository
+            CommentMapper commentMapper, PostRepository postRepository,
+            IdempotencyStore idempotencyStore
     ) {
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.postRepository = postRepository;
+        this.idempotencyStore = idempotencyStore;
     }
 
     private User getCurrentUser(){
@@ -46,7 +49,14 @@ public class CommentService {
                 );
     }
 
-    public CommentResponse createComment(CommentRequest request){
+    public CommentResponse createComment(String idempotencyKey, CommentRequest request){
+
+        if (idempotencyKey != null){
+            CommentResponse existing = idempotencyStore.get(idempotencyKey);
+            if (existing != null){
+                return existing;
+            }
+        }
 
         User user = getCurrentUser();
 
@@ -70,7 +80,13 @@ public class CommentService {
         Comment comment = commentMapper.toEntity(request, user, post, parentComment);
         Comment savedComment = commentRepository.save(comment);
 
-        return commentMapper.toResponse(savedComment);
+        CommentResponse response = commentMapper.toResponse(savedComment);
+
+        if (idempotencyKey != null){
+            idempotencyStore.save(idempotencyKey, response);
+        }
+
+        return response;
     }
 
     public List<CommentResponse> getCommentsByPost(Long postId){

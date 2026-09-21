@@ -22,10 +22,11 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CommentRequest request
     ) {
         CommentResponse response =
-                commentService.createComment(request);
+                commentService.createComment(idempotencyKey, request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

@@ -2,6 +2,7 @@ package com.backend.blogplatform.exception;
 
 import com.backend.blogplatform.dto.response.ErrorResponse;
 import com.backend.blogplatform.entity.Comment;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -162,6 +163,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(
+            OptimisticLockException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                "This post was modified by someone else, please refresh and try again.",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(response);
     }
 }

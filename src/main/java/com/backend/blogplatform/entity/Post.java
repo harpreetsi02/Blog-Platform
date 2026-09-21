@@ -34,6 +34,9 @@ public class Post {
     )
     private Set<Tag> tags = new HashSet<>();
 
+    @Version
+    private Long version;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -98,6 +101,14 @@ public class Post {
 
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public LocalDateTime getCreatedAt() {
